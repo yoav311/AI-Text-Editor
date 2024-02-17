@@ -1,0 +1,91 @@
+{
+    "adjustment_parameters": [
+        {
+            "type": "Readability",
+            "targets": [
+                "1th Grade Level",
+                "2th Grade Level",
+                "3th Grade Level",
+                "4th Grade Level",
+                "5th Grade Level",
+                "6th Grade Level"
+            ]
+        },
+        {
+            "type": "Length",
+            "targets": [
+                "Shorter by 20%",
+                "Shorter by 50%",
+                "Longer by 20%",
+                "Longer by 20%"
+            ]
+        },
+        {
+            "type": "Tone",
+            "targets": [
+                "Formal",
+                "Informal",
+                "Optimistic",
+                "Pessimistic",
+                "Netural",
+                "Sarcastic",
+                "Serious",
+                "Playful"
+            ]
+        },
+        {
+            "type": "Style",
+            "targets": [
+                "Descriptive",
+                "Expository",
+                "Narrative",
+                "Pessimistic",
+                "Persuasive",
+                "Concise",
+                "Verbose",
+                "Simple",
+                "Complex"
+            ]
+        },
+        {
+            "type": "Vocabulary",
+            "targets": [
+                "Simplified",
+                "Advanced",
+                "Technical",
+                "Colloquial",
+                "Archaeic",
+                "Modern"
+            ]
+        },
+        {
+            "type": "Emotional_Intensity",
+            "targets": [
+                "Increased",
+                "Decreased",
+                "Neutral",
+                "Varied"
+            ]
+        }
+    ],
+    "prompt_parameters": {
+        "entire_text": "Under a sky streaked with the last hues of sunset, a solitary figure stood at the edge of a cliff, overlooking the vast ocean below.\n\nIn a small, cozy room filled with the scent of old books, a woman sat by the window, pen in hand, lost in thought.\n\nAmidst the bustling streets of a vibrant city, a young man maneuvered his way through the crowd, his eyes searching for a familiar face.\n\nDeep within an ancient forest, where sunlight barely touched the ground, a hidden path led to a clearing known only to the creatures of the wild.\n\nHigh atop a desolate mountain, where the air was thin and cold, an old sage gazed at the stars, seeking answers in their eternal dance.\n\nIn a bustling marketplace, alive with colors and cacophony, a child's laughter rose above the noise, as she danced between the stalls.\n\nBeneath the waves of a turquoise sea, a coral kingdom thrived, teeming with life, untouched by the world above.\n\nIn the heart of a labyrinthine library, a secret chamber hid, filled with ancient manuscripts that whispered secrets of the ages.\n\nOn a moonlit night, a garden came alive with the glow of fireflies, casting enchanting lights around a lone, marble bench.\n\nAs dawn broke, the world awoke to the melody of birdsong, heralding the beginning of a new day filled with untold stories.",
+        "text_to_adjust": "In a small, cozy room filled with the scent of old books, a woman sat by the window, pen in hand, lost in thought.",     
+        "adjustments": [
+            {
+                "type": "Readability",
+                "target": "2th Grade Level"
+            },
+            {
+                "type": "Length",
+                "target": "Shorter by 20%"
+            },
+            {
+                "type": "Tone",
+                "target": "Formal"
+            }
+        ],
+        "additional_instructions": "Maintain the core narrative and themes of the original text."
+    },
+    "prompt_template": "You are tasked with adjusting a provided text according to specific parameters. Your goal is to modify the specific 'Text to adjust' to meet the designated {adjusment_types}, without losing the essence and thematic elements of the entire original text.\n\nThe Entire Original Text: '{entire_text}'\n\nThe Text To Be Adjusted: '{text_to_adjust}'\n\nAdjustments Required:\n{adjustments_list}\n\nAdditional Instructions: {additional_instructions}\n\nPlease rewrite the text provided, applying the adjustments listed above. Ensure that the revised text aligns with the specified parameters while preserving the original's narrative flow and thematic content. The final text should reflect the adjustments in a cohesive and natural manner."
+}

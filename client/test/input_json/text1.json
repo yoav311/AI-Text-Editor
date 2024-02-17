@@ -1,0 +1,18 @@
+{
+    "text": "As dawn broke, the world awoke to the melody of birdsong, heralding the beginning of a new day filled with untold stories.",
+    "adjust_entire_text": "False",
+    "generate_image_of_scene": "True",
+    "parameters": [
+        {
+            "parameter": "Readability",
+            "target": 1,
+            "formula": 2
+        },
+        {
+            "parameter": "Age",
+            "target": 2,
+            "formula": 3
+        }
+    ],
+    "scene_number": 3
+}
