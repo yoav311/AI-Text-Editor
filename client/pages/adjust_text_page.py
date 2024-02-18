@@ -4,10 +4,15 @@ from tkinter import ttk
 import json
 import sys
 import os
+import threading
+from concurrent.futures import ThreadPoolExecutor, as_completed
 
 # Add the project root directory to the Python path
 project_root = os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..'))
 sys.path.append(project_root)
+
+from api.controllers.get_text_scores import get_ai_estimated_targets
+from api.controllers.get_text_scores import get_classic_estimated_targets
 
 
 def get_scene_from_text(text, scene_num):
@@ -57,7 +62,7 @@ class AdjustTextPage(tk.Frame):
         self.right_side_frame.grid(row=0, column=1, sticky="nsew")
 
         # Center the text editor frame within the right_side_frame
-        self.text_editor_frame = tk.LabelFrame(self.right_side_frame, text="Text Editor", padx=10, pady=10)
+        self.text_editor_frame = tk.LabelFrame(self.right_side_frame, text="Text Editor", padx=10, pady=10, font=("Arial", 10, "bold"))
         self.text_editor_frame.pack(pady=(100, 0), fill="both", expand=True)  # Adjust pady for vertical centering
         self.text_editor_frame.configure(borderwidth=2, relief="groove") 
         
@@ -68,8 +73,10 @@ class AdjustTextPage(tk.Frame):
         self.scene_number_label = tk.Label(self.text_editor_frame, text="Scene Number:")
         self.scene_number_label.grid(row=1, column=0, sticky="e", padx=(10, 2))
 
-        self.scene_number_entry = tk.Entry(self.text_editor_frame)
+        self.var1 = tk.StringVar()
+        self.scene_number_entry = tk.Entry(self.text_editor_frame, text="Scene Number:", textvariable=self.var1)
         self.scene_number_entry.grid(row=1, column=1, sticky="w", padx=(2, 10))
+        self.var1.trace_add("write", self.on_scene_number_entered)
 
         # Initially hidden
         self.generate_old_image_button_var = tk.BooleanVar(value=False)
@@ -93,6 +100,35 @@ class AdjustTextPage(tk.Frame):
         # Initially add one parameter widget
         self.add_parameter_widget()
 
+    def on_scene_number_entered(self, name, index, mode):
+        # This function is called when the user presses Enter after entering a scene number
+        scene_number = self.scene_number_entry.get()
+        if scene_number.isdigit():
+            scene_number = int(scene_number)
+            current_text = self.text_viewer.get("1.0", tk.END)
+            try:
+                paragraph = get_scene_from_text(current_text, scene_number)
+                # Process the paragraph in a separate thread to avoid freezing the UI
+                threading.Thread(target=self.process_paragraph, args=(scene_number-1, paragraph,)).start()
+            except IndexError:
+                messagebox.showerror("Error", "Scene number out of range")
+        else:
+            messagebox.showerror("Error", "Invalid scene number")
+
+    def process_paragraph(self, para_idx, paragraph):
+
+        # Execute the processing logic in a thread-safe manner
+        try:
+            ai_estimated_targets = get_ai_estimated_targets(self.json_template, paragraph)
+            classic_estimated_targets = get_classic_estimated_targets(self.json_template, paragraph)
+
+            combined_estimated_targets = classic_estimated_targets['estimated_targets'] + ai_estimated_targets['estimated_targets']
+            
+            self.json_template["prompt_parameters"]["estimated_targets_old_text"] = combined_estimated_targets
+
+        except Exception as exc:
+            print(f"Error processing paragraph {para_idx}: {exc}")
+    
     def load_json_template(self, json_file_name):
         # Get the directory of the current script
         dir_path = os.path.dirname(__file__)
@@ -123,26 +159,36 @@ class AdjustTextPage(tk.Frame):
         
         parameter_target_label = tk.Label(frame, text="Target:")
         parameter_target = ttk.Combobox(frame, state="readonly")
+        estimated_target_label = tk.Label(frame, text="")
         
         # Function to update targets based on selected parameter type
-        def update_targets(event):
+        def on_parameter_selected(event):
             selected_type = parameter.get()
+            
             for param in self.json_template['adjustment_parameters']:
                 if param['type'] == selected_type:
                     parameter_target['values'] = param['targets']
-                    parameter_target.current(0)  # Optionally set the first target as the default selection
+                    parameter_target.current(0)  # Set the first target as the default selection
+                    break
+
+            # Iterate through estimated_targets_old_text to find the estimated target value
+            for target_info in self.json_template["prompt_parameters"]["estimated_targets_old_text"]:
+                if target_info['type'] == selected_type:
+                    estimated_target_value = target_info['estimated_target']
+                    estimated_target_label.config(text=f"Estimated {target_info['type']}: {estimated_target_value}")
                     break
         
         # Bind the parameter combobox selection event to the update_targets function
-        parameter.bind('<<ComboboxSelected>>', update_targets)
+        parameter.bind('<<ComboboxSelected>>', on_parameter_selected)
         
         parameter_label.grid(row=0, column=0, sticky="w")
         parameter.grid(row=0, column=1)
         parameter_target_label.grid(row=1, column=0, sticky="w")
         parameter_target.grid(row=1, column=1)
+        estimated_target_label.grid(row=2, column=0, columnspan=2)  # Span across both columns
         
         frame.pack(pady=5)
-        self.parameter_widgets.append((parameter, parameter_target))
+        self.parameter_widgets.append((parameter, parameter_target, estimated_target_label))
 
     def submit(self):
 
@@ -174,11 +220,10 @@ class AdjustTextPage(tk.Frame):
         prompt_parameters = self.json_template["prompt_parameters"]
         prompt_parameters["entire_text"] = entire_text
         prompt_parameters["text_to_adjust"] = text_to_adjust
-        prompt_parameters["adjustments"] = adjustments
+        prompt_parameters["user_adjustments"] = adjustments
         prompt_parameters["additional_instructions"] = "Maintain the core narrative and themes of the original text."
 
         self.json_template["prompt_parameters"] = prompt_parameters
-        json_output = json.dumps(self.json_template, indent=4)
         
          # Transition to DisplayPage with the updated json_template
         self.master.show_page("DisplayPage", json_template=self.json_template, gen_old_txt_image=gen_old_txt_image, gen_new_txt_image=gen_new_txt_image)

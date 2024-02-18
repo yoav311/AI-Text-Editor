@@ -3,7 +3,6 @@ import google.generativeai as genai
 
 
 def get_response_from_gemini(prompt):
-    API_key = "AIzaSyCVHugE4wcxHDekI3O8ZgK_pGeJu1BqkS8"
 
     genai.configure(api_key=API_key)
 

@@ -1,24 +1,28 @@
 {
 	"adjustment_parameters": 
 		[
-			{"type": "Readability", "targets": ["1th Grade Level", "2th Grade Level", "3th Grade Level", "4th Grade Level", "5th Grade Level", "6th Grade Level"]},
+			{"type": "Readability", "targets": ["1th Grade Level", "2th Grade Level", "3th Grade Level", "4th Grade Level", "5th Grade Level", "6th Grade Level", "7th Grade Level", "8th Grade Level", "9th Grade Level", "10th Grade Level"]},
 			{"type": "Length", "targets": ["Shorter by 20%", "Shorter by 50%", "Longer by 20%", "Longer by 20%"]},
 			{"type": "Tone", "targets": ["Formal", "Informal", "Optimistic", "Pessimistic", "Netural", "Sarcastic", "Serious", "Playful"]},
 			{"type": "Style", "targets": ["Descriptive", "Expository", "Narrative", "Pessimistic", "Persuasive", "Concise", "Verbose", "Simple", "Complex"]},
-			{"type": "Vocabulary", "targets": ["Simplified", "Advanced", "Technical", "Colloquial", "Archaeic", "Modern"]},
-			{"type": "Emotional_Intensity", "targets": ["Increased", "Decreased", "Neutral", "Varied"]}
+			{"type": "Vocabulary", "targets": ["Simplified", "Advanced", "Technical", "Colloquial", "Archaeic", "Modern"]}
 		],
+	"cllasic_target_estimations": ["Readability", "Length"],
+	"ai_target_estimations": ["Tone", "Style", "Vocabulary"],
 	"prompt_parameters": 
 		{
 			"entire_text": "",
 			"text_to_adjust": "",
+			"estimated_targets_old_text": [],
 			"adjusted_text": "",
-			"adjustments": [],
+			"estimated_targets_new_text": [],
+			"user_adjustments": [],
 			"additional_instructions": ""
 		},
 	"prompt_templates": 
 	[
 	{"type": "text_adjusment", "prompt": "You are tasked with adjusting a provided text according to specific parameters. Your goal is to modify the specific 'Text to adjust' to meet the designated {adjusment_types}, without losing the essence and thematic elements of the entire original text.\n\nThe Entire Original Text: '{entire_text}'\n\nThe Text To Be Adjusted: '{text_to_adjust}'\n\nAdjustments Required:\n{adjustments_list}\n\nAdditional Instructions: {additional_instructions}\n\nPlease rewrite the text provided, applying the adjustments listed above. Ensure that the revised text aligns with the specified parameters while preserving the original's narrative flow and thematic content. The final text should reflect the adjustments in a cohesive and natural manner."},
-	{"type": "image_generator", "prompt": "Create a visually compelling image that accurately depicts the following scene, capturing its essence, mood, and key elements: '{scene_text}'. Consider the setting, characters, and any significant objects or actions mentioned in the text to bring the scene to life in detail."}
+	{"type": "image_generator", "prompt": "Create a visually compelling image that accurately depicts the following scene, capturing its essence, mood, and key elements: '{scene_text}'. Consider the setting, characters, and any significant objects or actions mentioned in the text to bring the scene to life in detail."},
+	{"type": "target_estimation", "prompt": "Given the following text, please analyze it and provide estimates for specified text parameters in a JSON-like format. The text and parameters are as follows: Text to Analyze: {text_to_analyze} Parameters to Estimate: {parameters_to_estimate} Please provide your estimated targets in the following JSON-like format: {{ \"estimated_targets\": [ {{\"type\": \"<Parameter Type>\", \"estimated_target\": \"<Estimated Target>\"}}, ... ] }} Ensure the estimation is chosen from one of the given target options."}
 	]
 }

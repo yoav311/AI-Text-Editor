@@ -1,11 +1,10 @@
 import api.services.adjust_text as adj_txt
 
-
 def generate_prompt(prompt_parameters, prompt_template):
     # Extract values from the prompt_parameters dictionary
     entire_text = prompt_parameters.get("entire_text", "")
     text_to_adjust = prompt_parameters.get("text_to_adjust", "")
-    adjustments = prompt_parameters.get("adjustments", [])
+    adjustments = prompt_parameters.get("user_adjustments", [])
     additional_instructions = prompt_parameters.get("additional_instructions", "Maintain the core narrative and themes of the original text.")
 
     # Format the adjustments into a list

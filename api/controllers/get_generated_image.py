@@ -23,7 +23,7 @@ def get_generated_image(prompt_bb, text_version="Old"):
     prompt_parameters = prompt_bb["prompt_parameters"]
 
     prompt = generate_prompt(prompt_parameters=prompt_parameters, prompt_template=image_generation_prompt, text_version=text_version)
-
+    print(f"text_version: {text_version}, prompt: {prompt}")
     image = gen_img.generate_image(prompt)
 
     return image

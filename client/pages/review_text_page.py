@@ -11,6 +11,7 @@ sys.path.append(project_root)
 
 import api.controllers.get_generated_text as generate_text
 import api.controllers.get_generated_image as generate_image
+from api.controllers.get_text_scores import get_readability_score
 
 class DisplayTextPage(tk.Frame):
     def __init__(self, parent, json_template, gen_old_txt_image, gen_new_txt_image):
@@ -24,43 +25,61 @@ class DisplayTextPage(tk.Frame):
         self.grid_columnconfigure(0, weight=1)
         self.grid_columnconfigure(1, weight=1)
         # Adjusting grid configurations for dynamic spacing
-        self.grid_rowconfigure(0, weight=1)  # Lesser weight to text displays
-        self.grid_rowconfigure(1, weight=3)  # More weight to image display area
+        self.grid_rowconfigure(1, weight=1)  # Lesser weight to text displays
+        self.grid_rowconfigure(4, weight=3)  # More weight to image display area
+
+        # Return to TextEditor page
+        self.return_button = tk.Button(self, text="Back to Editing", command=self.go_to_editing_page)
+        self.return_button.grid(row=0, column=2, sticky='ne', padx=(10, 10))
 
         # Input Text Display
-        self.input_text_frame = tk.Frame(self)
+        self.input_text_frame = tk.Frame(self, borderwidth=2, relief="groove")
         self.input_text_display = tk.Text(self.input_text_frame, wrap="word")
         self.input_scrollbar = tk.Scrollbar(self.input_text_frame, command=self.input_text_display.yview)
         self.input_text_display.config(yscrollcommand=self.input_scrollbar.set)
         self.input_text_display.insert('1.0', self.input_text)
         self.input_text_display.config(state='disabled')  # Make the text display only
 
-        self.input_text_frame.grid(row=0, column=0, sticky="nsew", padx=(0, 10))
+        self.input_text_frame.grid(row=1, column=0, sticky="nsew", padx=(0, 10))
         self.input_text_display.pack(side="left", fill="both", expand=True)
         self.input_scrollbar.pack(side="right", fill="y")
-        self.input_text_display.config(height=6)
+        self.input_text_display.config(height=3)
+        self.input_text_frame.grid_propagate(False)
+
+
+        self.input_headline_label  = tk.Label(self, text="Input Text", font=("Arial", 10, "bold"))
+        self.input_headline_label.grid(row=0, column=0, sticky="nsew", padx=(0, 10))
+        # Get the readability score for the Input text
+        scores_dict = get_readability_score(self.input_text)
+        readability_score = '\n'.join('- {}: {}'.format(score_key, scores_dict[f"{score_key}"]) for score_key in scores_dict)
+        self.input_score_label = tk.Label(self, text=f"Readability: \n{readability_score}")
+        self.input_score_label.grid(row=2, column=0, sticky="nsew", padx=(10, 0))
 
         # Output Text Display
-        self.output_text_frame = tk.Frame(self)
+        self.output_text_frame = tk.Frame(self, borderwidth=2, relief="groove")
         self.output_text_display = tk.Text(self.output_text_frame, wrap="word")
         self.output_scrollbar = tk.Scrollbar(self.output_text_frame, command=self.output_text_display.yview)
         self.output_text_display.config(yscrollcommand=self.output_scrollbar.set)
 
-        self.output_text_frame.grid(row=0, column=1, sticky="nsew", padx=(10, 0))
+        self.output_headline_label  = tk.Label(self, text="Output Text", font=("Arial", 10, "bold"))
+        self.output_headline_label.grid(row=0, column=1, sticky="nsew", padx=(10, 0))
+
+        self.output_text_frame.grid(row=1, column=1, sticky="nsew", padx=(10, 0))
         self.output_text_display.pack(side="left", fill="both", expand=True)
         self.output_scrollbar.pack(side="right", fill="y")
-        self.output_text_display.config(height=6)
+        self.output_text_display.config(height=3)
+        self.output_text_frame.grid_propagate(False)
 
         # Progress Bar
         self.progress = ttk.Progressbar(self, orient="horizontal", length=200, mode="indeterminate")
-        self.progress.grid(row=1, column=0, columnspan=2, sticky="ew")
+        self.progress.grid(row=3, column=0, columnspan=2, sticky="ew", padx=(150, 150))
 
         self.generate_image_for_old_text = gen_old_txt_image
         self.generate_image_for_new_text = gen_new_txt_image
 
         # Image Frame Setup
         self.image_frame = tk.Frame(self)
-        self.image_frame.grid(row=2, column=0, columnspan=2, sticky="nsew", pady=10)
+        self.image_frame.grid(row=4, column=0, columnspan=2, sticky="nsew", pady=10)
         self.old_image_label = tk.Label(self.image_frame)
         self.new_image_label = tk.Label(self.image_frame)
         # Adjust the layout according to your design. For example:
@@ -84,10 +103,17 @@ class DisplayTextPage(tk.Frame):
     def generate_output_text(self):
         # Call the generate function
         output_text = generate_text.get_generated_text(self.json_template)  # Adjust this line as needed
-        self.progress.stop()
-
         self.output_text = output_text
+
         self.json_template["prompt_parameters"]["adjusted_text"] = self.output_text
+
+        # Get the readability score for the output text
+        scores_dict = get_readability_score(self.output_text)
+        readability_score = '\n'.join('- {}: {}'.format(score_key, scores_dict[f"{score_key}"]) for score_key in scores_dict)
+        self.output_score_label = tk.Label(self, text=f"Readability: \n{readability_score}")
+        self.output_score_label.grid(row=2, column=1, sticky="nsew", padx=(10, 0))
+
+        self.progress.stop()
 
         if self.generate_image_for_new_text:
             threading.Thread(target=self.generate_output_image, args=("New",)).start()
@@ -151,3 +177,6 @@ class DisplayTextPage(tk.Frame):
             filepath = filedialog.asksaveasfilename(defaultextension=".png", filetypes=[("PNG files", "*.png"), ("All files", "*.*")])
             if filepath:
                 self.original_new_image.save(filepath)
+    
+    def go_to_editing_page(self):
+        self.master.show_page("TextPage")

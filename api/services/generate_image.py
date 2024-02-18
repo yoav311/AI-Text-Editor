@@ -5,7 +5,8 @@ from io import BytesIO
 from openai import OpenAI
 
 def generate_image(prompt):
-    secret_key = "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"
+    secret_key = "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"
+    # "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"
 
     client = OpenAI(api_key=secret_key)
 
